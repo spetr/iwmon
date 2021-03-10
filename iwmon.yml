@@ -1,0 +1,9 @@
+icewarp:
+  tool:
+    path: "/opt/icewarp/tools.sh"
+    timeout: 5
+
+api:
+  listen: 0.0.0.0:8642
+  rest: true
+  prometheus: true
