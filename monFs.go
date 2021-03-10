@@ -61,38 +61,38 @@ var (
 	)
 	monFsMailClose = prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Name: "fs_mail_stat",
+			Name: "fs_mail_close",
 			Help: "Filesystem mail sotrage - close (microseconds)",
 		},
 	)
 	monFsMailUnlock = prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Name: "fs_mail_stat",
+			Name: "fs_mail_unlock",
 			Help: "Filesystem mail sotrage - unlock (microseconds)",
 		},
 	)
 	monFsMailStat = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "fs_mail_stat",
-			Help: "Filesystem mail sotrage - list",
+			Help: "Filesystem mail sotrage - stat (microseconds)",
 		},
 	)
 	monFsMailStatNx = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "fs_mail_statnx",
-			Help: "Filesystem mail sotrage - statnx",
+			Help: "Filesystem mail sotrage - statnx (microseconds)",
 		},
 	)
 	monFsMailDelete = prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Name: "fs_mail_stat",
-			Help: "Filesystem mail sotrage - delete",
+			Name: "fs_mail_delete",
+			Help: "Filesystem mail sotrage - delete (microseconds)",
 		},
 	)
 	monFsMailRmdir = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "fs_mail_rmdir",
-			Help: "Filesystem mail sotrage - rmdir",
+			Help: "Filesystem mail sotrage - rmdir (microseconds)",
 		},
 	)
 )
