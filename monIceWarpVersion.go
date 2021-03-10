@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"runtime"
 	"time"
 
@@ -19,8 +20,16 @@ var (
 // IceWarp version (from tool.sh)
 func monIceWarpVersionUpdate(r *prometheus.Registry) {
 	go func(r *prometheus.Registry) {
+		var (
+			iwResponse map[string]string
+			err        error
+		)
 		for {
-			iwResponse, _ := iwToolGet("system", "c_version", "c_settingsversion", "c_date")
+			if iwResponse, err = iwToolGet("system", "c_version", "c_settingsversion", "c_date"); err != nil {
+				fmt.Printf("TODO - ERROR: %s", err.Error())
+				time.Sleep(10)
+			}
+
 			r.Unregister(monIceWarpVersion)
 			monIceWarpVersion = prometheus.NewGauge(
 				prometheus.GaugeOpts{
@@ -36,6 +45,7 @@ func monIceWarpVersionUpdate(r *prometheus.Registry) {
 			)
 			r.MustRegister(monIceWarpVersion)
 			monIceWarpVersion.Set(1)
+
 			time.Sleep(conf.IceWarp.Refresh.Version * time.Second)
 		}
 	}(r)

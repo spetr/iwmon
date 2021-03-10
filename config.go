@@ -28,6 +28,7 @@ type (
 	}
 	tConfIceWarpRefresh struct {
 		Version time.Duration `yaml:"version"`
+		FsMail  time.Duration `yaml:"fs_mail"`
 	}
 	tConfAPI struct {
 		Listen     string   `yaml:"listen"`
@@ -51,6 +52,7 @@ func configLoad(configPath string) (err error) {
 				},
 				Refresh: tConfIceWarpRefresh{
 					Version: 3600,
+					FsMail:  60,
 				},
 			},
 			API: tConfAPI{
@@ -67,5 +69,6 @@ func configLoad(configPath string) (err error) {
 		return
 	}
 	conf = newConf
+
 	return
 }

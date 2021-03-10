@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"math/rand"
+	"time"
 )
 
 func init() {
-	fmt.Println("Init")
-
-	// Add Go module build info.
-	//	prometheus.MustRegister(prometheus.NewBuildInfoCollector())
+	rand.Seed(time.Now().UnixNano())
 }

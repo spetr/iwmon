@@ -11,6 +11,8 @@ import (
 func main() {
 
 	configLoad("iwmon.yml")
+	confRuntimeLoad()
+	handleSigHup()
 
 	r := prometheus.NewRegistry()
 	//	r.MustRegister(prometheus.NewGoCollector())
@@ -25,6 +27,7 @@ func main() {
 	}
 
 	monIceWarpVersionUpdate(r)
+	monFsMailUpdate(r)
 
 	log.Fatal(http.ListenAndServe(conf.API.Listen, nil))
 }

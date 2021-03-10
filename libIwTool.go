@@ -15,7 +15,7 @@ func iwToolGet(object string, variables ...string) (ret map[string]string, err e
 		toolOutBuf bytes.Buffer
 	)
 
-	tool = exec.Command("/opt/icewarp/tool.sh", append([]string{"get", object}, variables...)...)
+	tool = exec.Command(conf.IceWarp.Tool.Path, append([]string{"get", object}, variables...)...)
 	tool.Stdout = &toolOutBuf
 	tool.Start()
 
