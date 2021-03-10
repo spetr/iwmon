@@ -1,12 +1,19 @@
 icewarp:
+  # Monitoring using tool.sh
   tool:
     path: "/opt/icewarp/tools.sh"
+    timeout: 5                      # Command timeout
+    concurrency: 2                  # Max command concurrency
+  # Monitoring using snmp
+  snmp:
+    address: "0.0.0.0:161"
     timeout: 5
-    concurrency: 2
-  refresh:
-    version: 10
+  refresh:                          # Automatic value refresh (in seconds)
+    version: 3600
 
 api:
   listen: 0.0.0.0:9090
+  acl:
+    - 0.0.0.0/0
   rest: true
   prometheus: true

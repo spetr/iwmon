@@ -14,6 +14,7 @@ type (
 	}
 	tConfIceWarp struct {
 		Tool    tConfIceWarpTool    `yaml:"tool"`
+		SNMP    tConfIceWarpSNMP    `yaml:"snmp"`
 		Refresh tConfIceWarpRefresh `yaml:"refresh"`
 	}
 	tConfIceWarpTool struct {
@@ -21,13 +22,18 @@ type (
 		Timeout     time.Duration `yaml:"timeout"`
 		Concurrency int           `yaml:"concurrency"`
 	}
+	tConfIceWarpSNMP struct {
+		Address string        `yaml:"path"`
+		Timeout time.Duration `yaml:"timeout"`
+	}
 	tConfIceWarpRefresh struct {
 		Version time.Duration `yaml:"version"`
 	}
 	tConfAPI struct {
-		Listen     string `yaml:"listen"`
-		Rest       bool   `yaml:"rest"`
-		Prometheus bool   `yaml:"prometheus"`
+		Listen     string   `yaml:"listen"`
+		ACL        []string `yaml:"acl"`
+		Rest       bool     `yaml:"rest"`
+		Prometheus bool     `yaml:"prometheus"`
 	}
 )
 
