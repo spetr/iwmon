@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"os/exec"
 	"strings"
 	"time"
@@ -31,12 +30,11 @@ func iwToolGet(object string, variables ...string) (ret map[string]string, err e
 
 	ret = make(map[string]string, 0)
 	for _, line := range strings.Split(toolOutBuf.String(), "\n") {
-		lineParsed := strings.SplitN(line, ":", 2)
-		if len(lineParsed) == 2 {
-			ret[lineParsed[0]] = lineParsed[1]
-		} else {
-			fmt.Printf("DEBUG: skip line %s", line)
+		lineParsed := strings.SplitN(strings.Trim(line, " \t\r\n"), ":", 2)
+		if len(lineParsed) != 2 {
+			continue
 		}
+		ret[lineParsed[0]] = strings.Trim(lineParsed[1], " \t")
 	}
 	return
 }

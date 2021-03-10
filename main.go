@@ -10,15 +10,21 @@ import (
 
 func main() {
 
-	r := prometheus.NewRegistry()
-	r.MustRegister(monIceWarpVersion)
-	r.MustRegister(prometheus.NewGoCollector())
+	configLoad("iwmon.yml")
 
-	http.Handle("/metrics", promhttp.HandlerFor(
-		r,
-		promhttp.HandlerOpts{
-			EnableOpenMetrics: true,
-		},
-	))
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	r := prometheus.NewRegistry()
+	//	r.MustRegister(prometheus.NewGoCollector())
+
+	if conf.API.Prometheus {
+		http.Handle("/metrics", promhttp.HandlerFor(
+			r,
+			promhttp.HandlerOpts{
+				EnableOpenMetrics: true,
+			},
+		))
+	}
+
+	monIceWarpVersionUpdate(r)
+
+	log.Fatal(http.ListenAndServe(conf.API.Listen, nil))
 }
