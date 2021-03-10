@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -12,12 +13,16 @@ type (
 		API     tConfAPI     `yaml:"api"`
 	}
 	tConfIceWarp struct {
-		Tool tConfIceWarpTool `yaml:"tool"`
+		Tool    tConfIceWarpTool    `yaml:"tool"`
+		Refresh tConfIceWarpRefresh `yaml:"refresh"`
 	}
 	tConfIceWarpTool struct {
-		Path        string `yaml:"path"`
-		Timeout     uint   `yaml:"timeout"`
-		Concurrency uint   `yaml:"concurrency"`
+		Path        string        `yaml:"path"`
+		Timeout     time.Duration `yaml:"timeout"`
+		Concurrency int           `yaml:"concurrency"`
+	}
+	tConfIceWarpRefresh struct {
+		Version time.Duration `yaml:"version"`
 	}
 	tConfAPI struct {
 		Listen     string `yaml:"listen"`
@@ -37,6 +42,9 @@ func configLoad(configPath string) (err error) {
 					Path:        "/opt/icewarp/tool.sh",
 					Timeout:     3,
 					Concurrency: 2,
+				},
+				Refresh: tConfIceWarpRefresh{
+					Version: 3600,
 				},
 			},
 			API: tConfAPI{

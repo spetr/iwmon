@@ -3,6 +3,8 @@ icewarp:
     path: "/opt/icewarp/tools.sh"
     timeout: 5
     concurrency: 2
+  refresh:
+    version: 10
 
 api:
   listen: 0.0.0.0:9090

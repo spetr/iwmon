@@ -23,7 +23,7 @@ func iwToolGet(object string, variables ...string) (ret map[string]string, err e
 	go func() { toolDone <- tool.Wait() }()
 	select {
 	case err = <-toolDone:
-	case <-time.After(5 * time.Second):
+	case <-time.After(conf.IceWarp.Tool.Timeout * time.Second):
 		tool.Process.Kill()
 		err = errors.New("tool.sh - command timed out")
 	}
