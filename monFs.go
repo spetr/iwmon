@@ -134,8 +134,6 @@ func monFsMailUpdate(r *prometheus.Registry) {
 				// Prepare random folder and file
 				testFolder := getRandString(16)
 				testFile := fmt.Sprintf("%s.dat", getRandString(16))
-				fmt.Println("Test folder:", testFolder)
-				fmt.Println("Test file:", testFile)
 
 				// Prepare random string
 				buffer = []byte(getRandString(8192))
@@ -172,7 +170,12 @@ func monFsMailUpdate(r *prometheus.Registry) {
 					return
 				}
 				monFsMailOpen.Set(float64(time.Since(start).Microseconds()))
-				defer fh.Close()
+
+				defer func(fh *os.File) {
+					if fh != nil {
+						fh.Close()
+					}
+				}(fh)
 
 				// flock - TODO
 
@@ -224,6 +227,23 @@ func monFsMailUpdate(r *prometheus.Registry) {
 				start = time.Now()
 				_, _ = os.Stat(path.Join(testPath, testFolder, "non-existing.dat"))
 				monFsMailStatNx.Set(float64(time.Since(start).Microseconds()))
+
+				// delete file
+				start = time.Now()
+				if err = os.Remove(path.Join(testPath, testFolder, testFile)); err != nil {
+					monFsMailDelete.Set(-1)
+					return
+				}
+				monFsMailDelete.Set(float64(time.Since(start).Microseconds()))
+
+				// delete directory
+				start = time.Now()
+				if err = os.Remove(path.Join(testPath, testFolder)); err != nil {
+					monFsMailRmdir.Set(-1)
+					return
+				}
+				monFsMailRmdir.Set(float64(time.Since(start).Microseconds()))
+
 			}()
 		}
 	}(r)
