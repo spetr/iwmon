@@ -7,7 +7,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: compile and release
-      uses: spetr/go-release.action@v1.0.1
+      uses: spetr/go-release.action@v1.0.3
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: compile and release
-      uses: spetr/go-release.action@v1.0.1
+      uses: spetr/go-release.action@v1.0.3
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
