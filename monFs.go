@@ -104,6 +104,7 @@ func monFsMailUpdate(r *prometheus.Registry) {
 			err      error
 			testPath string
 			fh       *os.File
+			buffer   []byte
 		)
 
 		r.MustRegister(monFsMailMkdir)
@@ -120,64 +121,110 @@ func monFsMailUpdate(r *prometheus.Registry) {
 		r.MustRegister(monFsMailRmdir)
 
 		for {
-			testPath = path.Join(confRuntime.StorageMailPath, "iwmon")
-			// Create iwmon folder
-			if err = os.MkdirAll(testPath, os.ModePerm); err != nil {
-				fmt.Printf("TODO - ERROR: %s", err.Error())
-				time.Sleep(10)
-			}
+			func() {
+				defer time.Sleep(conf.IceWarp.Refresh.FsMail * time.Second)
 
-			// Prepare random folder and file
-			testFolder := getRandString(16)
-			testFile := fmt.Sprintf("%s.dat", getRandString(16))
-			fmt.Println("Test folder:", testFolder)
-			fmt.Println("Test file:", testFile)
+				testPath = path.Join(confRuntime.StorageMailPath, "iwmon")
+				// Create iwmon folder
+				if err = os.MkdirAll(testPath, os.ModePerm); err != nil {
+					fmt.Printf("TODO - ERROR: %s", err.Error())
+					time.Sleep(10)
+				}
 
-			// mkdir
-			start = time.Now()
-			if err = os.Mkdir(path.Join(testPath, testFolder), os.ModePerm); err != nil {
-				monFsMailMkdir.Set(-1)
-				continue
-			}
-			monFsMailMkdir.Set(float64(time.Since(start).Microseconds()))
+				// Prepare random folder and file
+				testFolder := getRandString(16)
+				testFile := fmt.Sprintf("%s.dat", getRandString(16))
+				fmt.Println("Test folder:", testFolder)
+				fmt.Println("Test file:", testFile)
 
-			// list
-			start = time.Now()
-			if _, err = ioutil.ReadDir(path.Join(testPath, testFolder)); err != nil {
-				monFsMailList.Set(-1)
-				continue
-			}
-			monFsMailList.Set(float64(time.Since(start).Microseconds()))
+				// Prepare random string
+				buffer = []byte(getRandString(8192))
 
-			// create file
-			start = time.Now()
-			if fh, err = os.OpenFile(path.Join(testPath, testFolder, testFile), os.O_RDWR|os.O_CREATE, os.ModePerm); err != nil {
-				monFsMailCreate.Set(-1)
-				continue
-			}
-			monFsMailCreate.Set(float64(time.Since(start).Microseconds()))
-			fh.Close()
+				// mkdir
+				start = time.Now()
+				if err = os.Mkdir(path.Join(testPath, testFolder), os.ModePerm); err != nil {
+					monFsMailMkdir.Set(-1)
+					return
+				}
+				monFsMailMkdir.Set(float64(time.Since(start).Microseconds()))
 
-			// open file
-			start = time.Now()
-			if fh, err = os.OpenFile(path.Join(testPath, testFolder, testFile), os.O_RDWR, os.ModePerm); err != nil {
-				monFsMailOpen.Set(-1)
-				continue
-			}
-			monFsMailOpen.Set(float64(time.Since(start).Microseconds()))
+				// list
+				start = time.Now()
+				if _, err = ioutil.ReadDir(path.Join(testPath, testFolder)); err != nil {
+					monFsMailList.Set(-1)
+					return
+				}
+				monFsMailList.Set(float64(time.Since(start).Microseconds()))
 
-			// flock - TODO
+				// create file
+				start = time.Now()
+				if fh, err = os.OpenFile(path.Join(testPath, testFolder, testFile), os.O_RDWR|os.O_CREATE, os.ModePerm); err != nil {
+					monFsMailCreate.Set(-1)
+					return
+				}
+				monFsMailCreate.Set(float64(time.Since(start).Microseconds()))
+				fh.Close()
 
-			// write
-			start = time.Now()
-			monFsMailWrite.Set(float64(time.Since(start).Microseconds()))
+				// open file
+				start = time.Now()
+				if fh, err = os.OpenFile(path.Join(testPath, testFolder, testFile), os.O_RDWR, os.ModePerm); err != nil {
+					monFsMailOpen.Set(-1)
+					return
+				}
+				monFsMailOpen.Set(float64(time.Since(start).Microseconds()))
+				defer fh.Close()
 
-			// sync
-			start = time.Now()
-			monFsMailSync.Set(float64(time.Since(start).Microseconds()))
+				// flock - TODO
 
-			time.Sleep(conf.IceWarp.Refresh.FsMail * time.Second)
+				// write
+				fh.SetWriteDeadline(time.Now().Add(2 * time.Second))
+				start = time.Now()
+				if _, err = fh.Write(buffer); err != nil {
+					monFsMailWrite.Set(-1)
+					return
+				}
+				monFsMailWrite.Set(float64(time.Since(start).Microseconds()))
 
+				// sync
+				fh.SetWriteDeadline(time.Now().Add(2 * time.Second))
+				start = time.Now()
+				if err = fh.Sync(); err != nil {
+					monFsMailSync.Set(-1)
+					return
+				}
+				monFsMailSync.Set(float64(time.Since(start).Microseconds()))
+
+				// read
+				fh.SetReadDeadline(time.Now().Add(2 * time.Second))
+				start = time.Now()
+				if _, err = fh.ReadAt(buffer, 0); err != nil {
+					monFsMailRead.Set(-1)
+					return
+				}
+				monFsMailRead.Set(float64(time.Since(start).Microseconds()))
+
+				// close
+				fh.SetWriteDeadline(time.Now().Add(2 * time.Second))
+				start = time.Now()
+				if err = fh.Close(); err != nil {
+					monFsMailClose.Set(-1)
+					return
+				}
+				monFsMailClose.Set(float64(time.Since(start).Microseconds()))
+
+				// stat
+				start = time.Now()
+				if _, err = os.Stat(path.Join(testPath, testFolder, testFile)); err != nil {
+					monFsMailStat.Set(-1)
+					return
+				}
+				monFsMailStat.Set(float64(time.Since(start).Microseconds()))
+
+				// statnx
+				start = time.Now()
+				_, _ = os.Stat(path.Join(testPath, testFolder, "non-existing.dat"))
+				monFsMailStatNx.Set(float64(time.Since(start).Microseconds()))
+			}()
 		}
 	}(r)
 }
