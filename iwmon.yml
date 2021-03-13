@@ -1,14 +1,18 @@
 icewarp:
+
   # Monitoring using tool.sh
   tool:
     path: "/opt/icewarp/tool.sh"
     timeout: 5                      # Command timeout
     concurrency: 2                  # Max command concurrency
+
   # Monitoring using snmp
   snmp:
     address: "0.0.0.0:161"
     timeout: 5
-  refresh:                          # Automatic value refresh (in seconds)
+
+  # Automatic value refresh (in seconds)
+  refresh:                          
     version: 3600
     fs_mail: 60
 
