@@ -26,8 +26,8 @@ func main() {
 		))
 	}
 
-	monIceWarpVersionUpdate(r)
-	monFsMailUpdate(r)
+	go monIceWarpVersionUpdate(r)
+	go monFsMailUpdate(r)
 
 	log.Fatal(http.ListenAndServe(conf.API.Listen, nil))
 }

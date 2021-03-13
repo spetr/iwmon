@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/spetr/go-zabbix-sender"
 )
 
 var (
@@ -98,15 +99,28 @@ var (
 )
 
 func monFsMailUpdate(r *prometheus.Registry) {
-	go func(r *prometheus.Registry) {
-		var (
-			start    time.Time
-			err      error
-			testPath string
-			fh       *os.File
-			buffer   []byte
-		)
 
+	var (
+		start               time.Time
+		err                 error
+		testPath            string
+		fh                  *os.File
+		buffer              []byte
+		timeMonFsMailMkdir  float64
+		timeMonFsMailList   float64
+		timeMonFsMailCreate float64
+		timeMonFsMailOpen   float64
+		timeMonFsMailWrite  float64
+		timeMonFsMailSync   float64
+		timeMonFsMailRead   float64
+		timeMonFsMailClose  float64
+		timeMonFsMailStat   float64
+		timeMonFsMailStatNx float64
+		timeMonFsMailDelete float64
+		timeMonFsMailRmdir  float64
+	)
+
+	if conf.API.Prometheus {
 		r.MustRegister(monFsMailMkdir)
 		r.MustRegister(monFsMailList)
 		r.MustRegister(monFsMailCreate)
@@ -119,132 +133,172 @@ func monFsMailUpdate(r *prometheus.Registry) {
 		r.MustRegister(monFsMailStatNx)
 		r.MustRegister(monFsMailDelete)
 		r.MustRegister(monFsMailRmdir)
+	}
 
-		for {
-			func() {
-				defer time.Sleep(conf.IceWarp.Refresh.FsMail * time.Second)
+	for {
+		func() {
+			// Default values (no test / error in test)
+			timeMonFsMailMkdir = -1
+			timeMonFsMailList = -1
+			timeMonFsMailCreate = -1
+			timeMonFsMailOpen = -1
+			timeMonFsMailWrite = -1
+			timeMonFsMailSync = -1
+			timeMonFsMailRead = -1
+			timeMonFsMailClose = -1
+			timeMonFsMailStat = -1
+			timeMonFsMailStatNx = -1
+			timeMonFsMailDelete = -1
+			timeMonFsMailRmdir = -1
 
-				testPath = path.Join(confRuntime.StorageMailPath, "iwmon")
-				// Create iwmon folder
-				if err = os.MkdirAll(testPath, os.ModePerm); err != nil {
-					fmt.Printf("TODO - ERROR: %s", err.Error())
-					time.Sleep(10 * time.Second)
+			testPath = path.Join(confRuntime.StorageMailPath, "iwmon")
+			// Create iwmon folder and prepare data
+			if err = os.MkdirAll(testPath, os.ModePerm); err != nil {
+				fmt.Printf("TODO - ERROR: %s", err.Error())
+				time.Sleep(10 * time.Second)
+				return
+			}
+			testFolder := getRandString(16)
+			testFile := fmt.Sprintf("%s.dat", getRandString(16))
+			buffer = []byte(getRandString(8192))
+
+			defer func() {
+				if fh != nil {
+					fh.Close()
 				}
-
-				// Prepare random folder and file
-				testFolder := getRandString(16)
-				testFile := fmt.Sprintf("%s.dat", getRandString(16))
-
-				// Prepare random string
-				buffer = []byte(getRandString(8192))
-
-				// mkdir
-				start = time.Now()
-				if err = os.Mkdir(path.Join(testPath, testFolder), os.ModePerm); err != nil {
-					monFsMailMkdir.Set(-1)
-					return
-				}
-				monFsMailMkdir.Set(float64(time.Since(start).Microseconds()))
-
-				// list
-				start = time.Now()
-				if _, err = ioutil.ReadDir(path.Join(testPath, testFolder)); err != nil {
-					monFsMailList.Set(-1)
-					return
-				}
-				monFsMailList.Set(float64(time.Since(start).Microseconds()))
-
-				// create file
-				start = time.Now()
-				if fh, err = os.OpenFile(path.Join(testPath, testFolder, testFile), os.O_RDWR|os.O_CREATE, os.ModePerm); err != nil {
-					monFsMailCreate.Set(-1)
-					return
-				}
-				monFsMailCreate.Set(float64(time.Since(start).Microseconds()))
-				fh.Close()
-
-				// open file
-				start = time.Now()
-				if fh, err = os.OpenFile(path.Join(testPath, testFolder, testFile), os.O_RDWR, os.ModePerm); err != nil {
-					monFsMailOpen.Set(-1)
-					return
-				}
-				monFsMailOpen.Set(float64(time.Since(start).Microseconds()))
-
-				defer func(fh *os.File) {
-					if fh != nil {
-						fh.Close()
-					}
-				}(fh)
-
-				// flock - TODO
-
-				// write
-				fh.SetWriteDeadline(time.Now().Add(2 * time.Second))
-				start = time.Now()
-				if _, err = fh.Write(buffer); err != nil {
-					monFsMailWrite.Set(-1)
-					return
-				}
-				monFsMailWrite.Set(float64(time.Since(start).Microseconds()))
-
-				// sync
-				fh.SetWriteDeadline(time.Now().Add(2 * time.Second))
-				start = time.Now()
-				if err = fh.Sync(); err != nil {
-					monFsMailSync.Set(-1)
-					return
-				}
-				monFsMailSync.Set(float64(time.Since(start).Microseconds()))
-
-				// read
-				fh.SetReadDeadline(time.Now().Add(2 * time.Second))
-				start = time.Now()
-				if _, err = fh.ReadAt(buffer, 0); err != nil {
-					monFsMailRead.Set(-1)
-					return
-				}
-				monFsMailRead.Set(float64(time.Since(start).Microseconds()))
-
-				// close
-				fh.SetWriteDeadline(time.Now().Add(2 * time.Second))
-				start = time.Now()
-				if err = fh.Close(); err != nil {
-					monFsMailClose.Set(-1)
-					return
-				}
-				monFsMailClose.Set(float64(time.Since(start).Microseconds()))
-
-				// stat
-				start = time.Now()
-				if _, err = os.Stat(path.Join(testPath, testFolder, testFile)); err != nil {
-					monFsMailStat.Set(-1)
-					return
-				}
-				monFsMailStat.Set(float64(time.Since(start).Microseconds()))
-
-				// statnx
-				start = time.Now()
-				_, _ = os.Stat(path.Join(testPath, testFolder, "non-existing.dat"))
-				monFsMailStatNx.Set(float64(time.Since(start).Microseconds()))
-
-				// delete file
-				start = time.Now()
-				if err = os.Remove(path.Join(testPath, testFolder, testFile)); err != nil {
-					monFsMailDelete.Set(-1)
-					return
-				}
-				monFsMailDelete.Set(float64(time.Since(start).Microseconds()))
-
-				// delete directory
-				start = time.Now()
-				if err = os.Remove(path.Join(testPath, testFolder)); err != nil {
-					monFsMailRmdir.Set(-1)
-					return
-				}
-				monFsMailRmdir.Set(float64(time.Since(start).Microseconds()))
-
 			}()
+
+			// mkdir
+			start = time.Now()
+			if err = os.Mkdir(path.Join(testPath, testFolder), os.ModePerm); err != nil {
+				return
+			}
+			timeMonFsMailMkdir = float64(time.Since(start).Microseconds())
+
+			// list
+			start = time.Now()
+			if _, err = ioutil.ReadDir(path.Join(testPath, testFolder)); err != nil {
+				return
+			}
+			timeMonFsMailList = float64(time.Since(start).Microseconds())
+
+			// create file
+			start = time.Now()
+			if fh, err = os.OpenFile(path.Join(testPath, testFolder, testFile), os.O_RDWR|os.O_CREATE, os.ModePerm); err != nil {
+				return
+			}
+			timeMonFsMailCreate = float64(time.Since(start).Microseconds())
+			fh.Close()
+
+			// open file
+			start = time.Now()
+			if fh, err = os.OpenFile(path.Join(testPath, testFolder, testFile), os.O_RDWR, os.ModePerm); err != nil {
+				return
+			}
+			timeMonFsMailOpen = float64(time.Since(start).Microseconds())
+
+			// flock - TODO
+
+			// write
+			fh.SetWriteDeadline(time.Now().Add(2 * time.Second))
+			start = time.Now()
+			if _, err = fh.Write(buffer); err != nil {
+				return
+			}
+			timeMonFsMailWrite = float64(time.Since(start).Microseconds())
+
+			// sync
+			fh.SetWriteDeadline(time.Now().Add(2 * time.Second))
+			start = time.Now()
+			if err = fh.Sync(); err != nil {
+				return
+			}
+			timeMonFsMailSync = float64(time.Since(start).Microseconds())
+
+			// read
+			fh.SetReadDeadline(time.Now().Add(2 * time.Second))
+			start = time.Now()
+			if _, err = fh.ReadAt(buffer, 0); err != nil {
+				return
+			}
+			timeMonFsMailRead = float64(time.Since(start).Microseconds())
+
+			// close
+			fh.SetWriteDeadline(time.Now().Add(2 * time.Second))
+			start = time.Now()
+			if err = fh.Close(); err != nil {
+				return
+			}
+			timeMonFsMailClose = float64(time.Since(start).Microseconds())
+
+			// stat
+			start = time.Now()
+			if _, err = os.Stat(path.Join(testPath, testFolder, testFile)); err != nil {
+				return
+			}
+			timeMonFsMailStat = float64(time.Since(start).Microseconds())
+
+			// statnx
+			start = time.Now()
+			_, _ = os.Stat(path.Join(testPath, testFolder, "non-existing.dat"))
+			timeMonFsMailStatNx = float64(time.Since(start).Microseconds())
+
+			// delete file
+			start = time.Now()
+			if err = os.Remove(path.Join(testPath, testFolder, testFile)); err != nil {
+				return
+			}
+			timeMonFsMailDelete = float64(time.Since(start).Microseconds())
+
+			// delete directory
+			start = time.Now()
+			if err = os.Remove(path.Join(testPath, testFolder)); err != nil {
+				return
+			}
+			timeMonFsMailRmdir = float64(time.Since(start).Microseconds())
+
+		}()
+
+		// Prometheus Exporter
+		if conf.API.Prometheus {
+			monFsMailMkdir.Set(timeMonFsMailMkdir)
+			monFsMailList.Set(timeMonFsMailList)
+			monFsMailCreate.Set(timeMonFsMailCreate)
+			monFsMailOpen.Set(timeMonFsMailOpen)
+			monFsMailWrite.Set(timeMonFsMailWrite)
+			monFsMailSync.Set(timeMonFsMailSync)
+			monFsMailRead.Set(timeMonFsMailRead)
+			monFsMailClose.Set(timeMonFsMailClose)
+			monFsMailStat.Set(timeMonFsMailStat)
+			monFsMailStatNx.Set(timeMonFsMailStatNx)
+			monFsMailDelete.Set(timeMonFsMailDelete)
+			monFsMailRmdir.Set(timeMonFsMailRmdir)
 		}
-	}(r)
+
+		// Zabbix Sender
+		if conf.ZabbixSender.Enabled {
+			var (
+				metrics []*zabbix.Metric
+				t       = time.Now().Unix()
+			)
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_mkdir", fmt.Sprintf("%f", timeMonFsMailMkdir), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_list", fmt.Sprintf("%f", timeMonFsMailList), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_create", fmt.Sprintf("%f", timeMonFsMailCreate), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_open", fmt.Sprintf("%f", timeMonFsMailOpen), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_write", fmt.Sprintf("%f", timeMonFsMailWrite), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_sync", fmt.Sprintf("%f", timeMonFsMailSync), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_read", fmt.Sprintf("%f", timeMonFsMailRead), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_close", fmt.Sprintf("%f", timeMonFsMailClose), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_stat", fmt.Sprintf("%f", timeMonFsMailStat), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_statnx", fmt.Sprintf("%f", timeMonFsMailStatNx), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_delete", fmt.Sprintf("%f", timeMonFsMailDelete), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "fs.mail_rmdir", fmt.Sprintf("%f", timeMonFsMailRmdir), true, t))
+			for i := range conf.ZabbixSender.Servers {
+				z := zabbix.NewSender(conf.ZabbixSender.Servers[i])
+				z.SendMetrics(metrics)
+			}
+		}
+
+		time.Sleep(conf.IceWarp.Refresh.FsMail * time.Second)
+	}
 }
