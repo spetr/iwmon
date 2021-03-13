@@ -3,6 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"os"
+	"runtime"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -75,6 +76,9 @@ func configLoad(configPath string) (err error) {
 			},
 		}
 	)
+	if runtime.GOOS == "windows" {
+		conf.IceWarp.Tool.Path = "C:/IceWarp/tool.exe"
+	}
 	if buf, err = ioutil.ReadFile(configPath); err != nil {
 		return
 	}
