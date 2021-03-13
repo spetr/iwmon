@@ -16,7 +16,7 @@ jobs:
         GOARCH: amd64
         GOOS: linux
         PROJECT_NAME: iwmon
-        EXTRA_FILES: "iwmon.yml"
+        EXTRA_FILES: "iwmon.yml LICENSE"
 
   release-windows-amd64:
     name: release windows/amd64
@@ -30,4 +30,4 @@ jobs:
         GOARCH: amd64
         GOOS: windows
         PROJECT_NAME: iwmon
-        EXTRA_FILES: "iwmon.yml"
+        EXTRA_FILES: "iwmon.yml LICENSE"
