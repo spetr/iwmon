@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"os"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -9,8 +10,9 @@ import (
 
 type (
 	tConf struct {
-		IceWarp tConfIceWarp `yaml:"icewarp"`
-		API     tConfAPI     `yaml:"api"`
+		IceWarp      tConfIceWarp      `yaml:"icewarp"`
+		API          tConfAPI          `yaml:"api"`
+		ZabbixSender tConfZabbixSender `yaml:"zabbix-sender"`
 	}
 	tConfIceWarp struct {
 		Tool    tConfIceWarpTool    `yaml:"tool"`
@@ -36,11 +38,17 @@ type (
 		Rest       bool     `yaml:"rest"`
 		Prometheus bool     `yaml:"prometheus"`
 	}
+	tConfZabbixSender struct {
+		Hostname string   `yaml:"hostname"`
+		Enabled  bool     `yaml:"enabled"`
+		Servers  []string `yaml:"servers"`
+	}
 )
 
 var conf *tConf
 
 func configLoad(configPath string) (err error) {
+	hostname, _ := os.Hostname()
 	var (
 		buf     []byte
 		newConf = &tConf{
@@ -59,6 +67,11 @@ func configLoad(configPath string) (err error) {
 				Listen:     "0.0.0.0:9090",
 				Rest:       false,
 				Prometheus: false,
+			},
+			ZabbixSender: tConfZabbixSender{
+				Enabled:  false,
+				Hostname: hostname,
+				Servers:  []string{},
 			},
 		}
 	)

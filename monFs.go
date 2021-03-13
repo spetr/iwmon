@@ -128,7 +128,7 @@ func monFsMailUpdate(r *prometheus.Registry) {
 				// Create iwmon folder
 				if err = os.MkdirAll(testPath, os.ModePerm); err != nil {
 					fmt.Printf("TODO - ERROR: %s", err.Error())
-					time.Sleep(10)
+					time.Sleep(10 * time.Second)
 				}
 
 				// Prepare random folder and file

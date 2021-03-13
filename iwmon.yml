@@ -18,3 +18,9 @@ api:
     - 0.0.0.0/0
   rest: true
   prometheus: true
+
+zabbix-sender:
+  enabled: true
+  hostname: icewarp-server.example.com
+  servers:
+    - 172.16.254.1:10051

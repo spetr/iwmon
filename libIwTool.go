@@ -28,7 +28,7 @@ func iwToolGet(object string, variables ...string) (ret map[string]string, err e
 		err = errors.New("tool.sh - command timed out")
 	}
 
-	ret = make(map[string]string, 0)
+	ret = make(map[string]string)
 	for _, line := range strings.Split(toolOutBuf.String(), "\n") {
 		lineParsed := strings.SplitN(strings.Trim(line, " \t\r\n"), ":", 2)
 		if len(lineParsed) != 2 {
