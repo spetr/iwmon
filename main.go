@@ -1,33 +1,48 @@
 package main
 
 import (
+	"flag"
 	"log"
-	"net/http"
+	"os"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/spetr/service"
 )
 
 func main() {
+	svcFlag := flag.String("service", "", "Control the system service.")
+	flag.Parse()
 
-	configLoad("iwmon.yml")
-	confRuntimeLoad()
-	handleSigHup()
+	options := make(service.KeyValue)
+	options["Restart"] = "always"
 
-	r := prometheus.NewRegistry()
-	//	r.MustRegister(prometheus.NewGoCollector())
-
-	if conf.API.Prometheus {
-		http.Handle("/metrics", promhttp.HandlerFor(
-			r,
-			promhttp.HandlerOpts{
-				EnableOpenMetrics: true,
-			},
-		))
+	svcConfig := &service.Config{
+		Name:        "iwmon",
+		DisplayName: "IceWarp monitoring",
+		Description: "IceWarp server external monitoring tool.",
 	}
 
-	go monIceWarpVersionUpdate(r)
-	go monFsMailUpdate(r)
+	prg := &program{}
+	s, err := service.New(prg, svcConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	log.Fatal(http.ListenAndServe(conf.API.Listen, nil))
+	if len(os.Args) > 1 {
+		err = service.Control(s, *svcFlag)
+		if err != nil {
+			log.Printf("Valid actions: %q\n", service.ControlAction)
+			log.Fatal(err)
+		}
+		return
+	}
+
+	logger, err = s.Logger(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = s.Run()
+	if err != nil {
+		logger.Error(err)
+	}
 }
