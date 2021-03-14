@@ -139,10 +139,16 @@ func monFsMailUpdate(r *prometheus.Registry) {
 			timeMonFsMailDelete = -1
 			timeMonFsMailRmdir = -1
 
+			if _, err = os.Stat(confRuntime.StorageMailPath); err != nil {
+				logger.Errorf("Mail path error: %s", err.Error())
+				time.Sleep(10 * time.Second)
+				return
+			}
+
 			testPath = path.Join(confRuntime.StorageMailPath, "iwmon")
 			// Create iwmon folder and prepare data
 			if err = os.MkdirAll(testPath, os.ModePerm); err != nil {
-				fmt.Printf("TODO - ERROR: %s", err.Error())
+				logger.Errorf("Can not create mail fs testing directort: %s", err.Error())
 				time.Sleep(10 * time.Second)
 				return
 			}
