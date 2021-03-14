@@ -15,6 +15,7 @@ icewarp:
   refresh:                          
     version: 3600
     fs_mail: 60
+    snmp: 60
 
 api:
   listen: 0.0.0.0:9090

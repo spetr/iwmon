@@ -43,6 +43,7 @@ icewarp:
   refresh:                          
     version: 3600
     fs_mail: 60
+    snmp: 60
 
 zabbix-sender:
   enabled: true
@@ -50,3 +51,7 @@ zabbix-sender:
   servers:
     - 172.16.254.1:10051
 ```
+
+### Links
+
+https://github.com/milamber86/scripts/blob/master/iwmon_agent.sh

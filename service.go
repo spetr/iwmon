@@ -43,6 +43,7 @@ func (p *program) run() {
 	}
 
 	go monIceWarpVersionUpdate(r)
+	go monIceWarpSNMPUpdate(r)
 	go monFsMailUpdate(r)
 
 	go func() {
