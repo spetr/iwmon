@@ -15,6 +15,9 @@ func iwToolGet(object string, variables ...string) (ret map[string]string, err e
 		toolOutBuf bytes.Buffer
 	)
 
+	for i := range variables {
+		variables[i] = strings.Trim(variables[i], " \t\n\r")
+	}
 	tool = exec.Command(conf.IceWarp.Tool.Path, append([]string{"get", object}, variables...)...)
 	tool.Stdout = &toolOutBuf
 	tool.Start()

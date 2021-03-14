@@ -36,12 +36,6 @@ var (
 			Help: "Filesystem mail storage - open (microseconds)",
 		},
 	)
-	monFsMailLock = prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Name: "fs_mail_lock",
-			Help: "Filesystem mail storage - lock (microseconds)",
-		},
-	)
 	monFsMailWrite = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "fs_mail_write",
@@ -64,12 +58,6 @@ var (
 		prometheus.GaugeOpts{
 			Name: "fs_mail_close",
 			Help: "Filesystem mail storage - close (microseconds)",
-		},
-	)
-	monFsMailUnlock = prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Name: "fs_mail_unlock",
-			Help: "Filesystem mail storage - unlock (microseconds)",
 		},
 	)
 	monFsMailStat = prometheus.NewGauge(
