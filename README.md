@@ -7,7 +7,7 @@ is stored in "iwmon.yml" configuration file located in same directory with the m
 
 ```bash
 mkdir /opt/iwmon
-tar -C /opt/iwmon -xzf iwmon_v0.2.6_linux_amd64.tgz
+tar -C /opt/iwmon -xzf iwmon_v0.2.7_linux_amd64.tgz
 cd /opt/iwmon
 ./iwmon -service install
 ./iwmon -service start
