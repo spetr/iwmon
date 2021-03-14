@@ -8,7 +8,8 @@ icewarp:
 
   # Monitoring using snmp
   snmp:
-    address: "0.0.0.0:161"
+    enabled: true
+    address: "127.0.0.1:161"
     timeout: 5
 
   # Automatic value refresh (in seconds)

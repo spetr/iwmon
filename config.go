@@ -2,8 +2,10 @@ package main
 
 import (
 	"io/ioutil"
+	"net"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -26,7 +28,12 @@ type (
 		Concurrency int           `yaml:"concurrency"`
 	}
 	tConfIceWarpSNMP struct {
-		Address string        `yaml:"path"`
+		Enabled bool   `yaml:"enabled"`
+		Address string `yaml:"path"`
+		parsed  struct {
+			address string
+			port    uint16
+		}
 		Timeout time.Duration `yaml:"timeout"`
 	}
 	tConfIceWarpRefresh struct {
@@ -60,6 +67,11 @@ func configLoad(configPath string) (err error) {
 					Timeout:     3,
 					Concurrency: 2,
 				},
+				SNMP: tConfIceWarpSNMP{
+					Enabled: true,
+					Address: "127.0.0.1:161",
+					Timeout: 5,
+				},
 				Refresh: tConfIceWarpRefresh{
 					Version: 3600,
 					FsMail:  60,
@@ -79,7 +91,7 @@ func configLoad(configPath string) (err error) {
 		}
 	)
 	if runtime.GOOS == "windows" {
-		conf.IceWarp.Tool.Path = "C:/IceWarp/tool.exe"
+		newConf.IceWarp.Tool.Path = "C:/IceWarp/tool.exe"
 	}
 	if buf, err = ioutil.ReadFile(configPath); err != nil {
 		return
@@ -87,6 +99,25 @@ func configLoad(configPath string) (err error) {
 	if err = yaml.Unmarshal(buf, newConf); err != nil {
 		return
 	}
+
+	// Parse SNMP
+	var (
+		snmpPortString string
+		snmpPort       int
+	)
+	newConf.IceWarp.SNMP.parsed.address, snmpPortString, err = net.SplitHostPort(newConf.IceWarp.SNMP.Address)
+	if err != nil {
+		logger.Errorf("Can not parse SNMP address: %s", err.Error())
+		newConf.IceWarp.SNMP.parsed.address = "127.0.0.1"
+		snmpPortString = "161"
+	}
+	snmpPort, err = strconv.Atoi(snmpPortString)
+	if err != nil {
+		logger.Errorf("Can not parse SNMP port: %s", err.Error())
+		snmpPort = 161
+	}
+	newConf.IceWarp.SNMP.parsed.port = uint16(snmpPort)
+
 	conf = newConf
 
 	return

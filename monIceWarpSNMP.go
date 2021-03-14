@@ -208,7 +208,9 @@ func monIceWarpSNMPUpdate(r *prometheus.Registry) {
 			valueMsgFailIpsCount = -1
 			valueMsgFailSpamCount = -1
 
-			gosnmp.Default.Target = conf.IceWarp.SNMP.Address
+			gosnmp.Default.Target = conf.IceWarp.SNMP.parsed.address
+			gosnmp.Default.Port = conf.IceWarp.SNMP.parsed.port
+
 			if err = gosnmp.Default.Connect(); err != nil {
 				logger.Errorf("Can not connect to IceWarp SNMP: %s", err.Error())
 				time.Sleep(10 * time.Second)

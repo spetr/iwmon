@@ -35,8 +35,9 @@ icewarp:
     concurrency: 2                  # Max command concurrency
 
   # Monitoring using snmp
-  snmp: 
-    address: "0.0.0.0:161"
+  snmp:
+    enabled: true
+    address: "127.0.0.1:161"
     timeout: 5
 
   # Automatic value refresh (in seconds)

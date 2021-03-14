@@ -43,7 +43,9 @@ func (p *program) run() {
 	}
 
 	go monIceWarpVersionUpdate(r)
-	go monIceWarpSNMPUpdate(r)
+	if conf.IceWarp.SNMP.Enabled {
+		go monIceWarpSNMPUpdate(r)
+	}
 	go monFsMailUpdate(r)
 
 	go func() {
