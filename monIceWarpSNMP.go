@@ -242,45 +242,47 @@ func monIceWarpSNMPUpdate(r *prometheus.Registry) {
 				return
 			}
 			for i := range snmpResponse.Variables {
-				switch snmpResponse.Variables[i].Name {
-				case oidSMTPCount:
-					valueSMTPCount = 11
-				case oidPOP3Count:
-					valuePOP3Count = 11
-				case oidIMAPCount:
-					valueIMAPCount = 11
-				case oidXMPPSCount:
-					valueXMPPSCount = 11
-				case oidXMPPCCount:
-					valueXMPPSCount = 11
-				case oidGwCount:
-					valueGwCount = 11
-				case oidWebCount:
-					valueWebCount = 11
-				case oidMsgOutCount:
-					valueMsgOutCount = 11
-				case oidMsgInCount:
-					valueMsgInCount = 11
-				case oidMsgFailCount:
-					valueMsgFailCount = 11
-				case oidMsgFailDataCount:
-					valueMsgFailDataCount = 11
-				case oidMsgFailVirusCount:
-					valueMsgFailVirusCount = 11
-				case oidMsgFailCfCount:
-					valueMsgFailCfCount = 11
-				case oidMsgFailCfExtCount:
-					valueMsgFailCfExtCount = 11
-				case oidMsgFailRuleCount:
-					valueMsgFailRuleCount = 11
-				case oidMsgFailDnsblCount:
-					valueMsgFailDnsblCount = 11
-				case oidMsgFailIpsCount:
-					valueMsgFailIpsCount = 11
-				case oidMsgFailSpamCount:
-					valueMsgFailSpamCount = 11
-				default:
-					logger.Warningf("Unknown SNMP OID in response: %s:", snmpResponse.Variables[i].Name)
+				if snmpResponse.Variables[i].Type.String() == "Integer" {
+					switch snmpResponse.Variables[i].Name {
+					case oidSMTPCount:
+						valueSMTPCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidPOP3Count:
+						valuePOP3Count = float64(snmpResponse.Variables[i].Value.(int))
+					case oidIMAPCount:
+						valueIMAPCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidXMPPSCount:
+						valueXMPPSCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidXMPPCCount:
+						valueXMPPCCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidGwCount:
+						valueGwCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidWebCount:
+						valueWebCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgOutCount:
+						valueMsgOutCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgInCount:
+						valueMsgInCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgFailCount:
+						valueMsgFailCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgFailDataCount:
+						valueMsgFailDataCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgFailVirusCount:
+						valueMsgFailVirusCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgFailCfCount:
+						valueMsgFailCfCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgFailCfExtCount:
+						valueMsgFailCfExtCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgFailRuleCount:
+						valueMsgFailRuleCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgFailDnsblCount:
+						valueMsgFailDnsblCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgFailIpsCount:
+						valueMsgFailIpsCount = float64(snmpResponse.Variables[i].Value.(int))
+					case oidMsgFailSpamCount:
+						valueMsgFailSpamCount = float64(snmpResponse.Variables[i].Value.(int))
+					default:
+						logger.Warningf("Unknown SNMP OID in response: %s:", snmpResponse.Variables[i].Name)
+					}
 				}
 			}
 
@@ -315,6 +317,23 @@ func monIceWarpSNMPUpdate(r *prometheus.Registry) {
 				t       = time.Now().Unix()
 			)
 			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_smtp_count", fmt.Sprintf("%f", valueSMTPCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_pop3_count", fmt.Sprintf("%f", valuePOP3Count), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_imap_count", fmt.Sprintf("%f", valueIMAPCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_xmppc_count", fmt.Sprintf("%f", valueXMPPCCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_xmpps_count", fmt.Sprintf("%f", valueXMPPSCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_gw_count", fmt.Sprintf("%f", valueGwCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_web_count", fmt.Sprintf("%f", valueWebCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgout_count", fmt.Sprintf("%f", valueMsgOutCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgin_count", fmt.Sprintf("%f", valueMsgInCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgfail_count", fmt.Sprintf("%f", valueMsgFailCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msginfaildata_count", fmt.Sprintf("%f", valueMsgFailDataCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgfailvirus_count", fmt.Sprintf("%f", valueMsgFailVirusCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgfailcf_count", fmt.Sprintf("%f", valueMsgFailCfCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgfailcfext_count", fmt.Sprintf("%f", valueMsgFailCfExtCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgfailrule_count", fmt.Sprintf("%f", valueMsgFailRuleCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgfaildnsbl_count", fmt.Sprintf("%f", valueMsgFailDnsblCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgfailips_count", fmt.Sprintf("%f", valueMsgFailIpsCount), true, t))
+			metrics = append(metrics, zabbix.NewMetric(conf.ZabbixSender.Hostname, "iw_msgfailspam_count", fmt.Sprintf("%f", valueMsgFailSpamCount), true, t))
 			for i := range conf.ZabbixSender.Servers {
 				z := zabbix.NewSender(conf.ZabbixSender.Servers[i])
 				z.SendMetrics(metrics)
