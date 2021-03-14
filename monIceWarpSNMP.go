@@ -340,7 +340,7 @@ func monIceWarpSNMPUpdate(r *prometheus.Registry) {
 			}
 		}
 
-		time.Sleep(conf.IceWarp.Refresh.SNMP * time.Second)
+		time.Sleep(time.Duration(conf.IceWarp.Refresh.SNMP) * time.Second)
 
 	}
 }

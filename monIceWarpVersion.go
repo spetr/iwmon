@@ -65,6 +65,6 @@ func monIceWarpVersionUpdate(r *prometheus.Registry) {
 			}
 		}
 
-		time.Sleep(conf.IceWarp.Refresh.Version * time.Second)
+		time.Sleep(time.Duration(conf.IceWarp.Refresh.Version) * time.Second)
 	}
 }

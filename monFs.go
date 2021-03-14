@@ -293,6 +293,6 @@ func monFsMailUpdate(r *prometheus.Registry) {
 			}
 		}
 
-		time.Sleep(conf.IceWarp.Refresh.FsMail * time.Second)
+		time.Sleep(time.Duration(conf.IceWarp.Refresh.FsMail) * time.Second)
 	}
 }

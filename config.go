@@ -30,9 +30,9 @@ type (
 		Timeout time.Duration `yaml:"timeout"`
 	}
 	tConfIceWarpRefresh struct {
-		Version time.Duration `yaml:"version"`
-		FsMail  time.Duration `yaml:"fs_mail"`
-		SNMP    time.Duration `yaml:"snmp"`
+		Version int `yaml:"version"`
+		FsMail  int `yaml:"fs_mail"`
+		SNMP    int `yaml:"snmp"`
 	}
 	tConfAPI struct {
 		Listen     string   `yaml:"listen"`
